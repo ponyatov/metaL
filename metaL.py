@@ -104,6 +104,23 @@ class Project(Meta):
         self.mk()
         self.apt()
         self.giti()
+        self.cf()
+
+    def cf(self):
+        self.cf = File('', '.clang-format'); self.d // self.cf
+        self.cf // '''
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 80
+
+SortIncludes: false
+
+AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: All
+
+Language: Cpp'''
 
     def giti(self):
         self.giti = giti(); self.d // self.giti
@@ -116,7 +133,7 @@ class Project(Meta):
         self.EMAIL = 'dponyatov@gmail.com'
         self.YEAR = 2020
         self.LICENSE = 'All rights reserved'
-        self.GITHUB = 'https://bitbucket.org/ponyatov'
+        self.GITHUB = 'https://github.com/ponyatov'
 
     def apt(self):
         self.apt = File('apt', '.txt'); self.d // self.apt
@@ -211,6 +228,7 @@ class Project(Meta):
     def readme(self):
         self.readme = File('README.md'); self.d // self.readme
         (self.readme
+            // '![logo](doc/logo.png)'
             // f'#  {self}'
             // f'## {self.TITLE}'
             // ''
@@ -263,9 +281,40 @@ class Project(Meta):
         #
         self.mk.doc = Sec('doc', pfx=''); self.mk // self.mk.doc
         #
-        self.mk.install = Sec('install', pfx=''); self.mk // self.mk.install
+        self.mk.install_ = Sec('install', pfx=''); self.mk // self.mk.install_
+        self.mk.install = \
+            (S('install: $(OS)_install', pfx='.PHONY: install update')
+             // '$(MAKE) update')
+        self.mk.update = \
+            (S('update: $(OS)_update', pfx=''))
+        self.mk.install_ // self.mk.install // self.mk.update
+        self.mk.install_ \
+            // (S('GNU_Linux_install GNU_Linux_update:',
+                pfx='\n.PHONY: GNU_Linux_install GNU_Linux_update')
+                // 'sudo apt update'
+                // 'sudo apt install -u `cat apt.txt`')
         #
         self.mk.merge = Sec('merge', pfx=''); self.mk // self.mk.merge
+        (self.mk.merge
+            // 'MERGE  = Makefile README.md .gitignore apt.txt .clang-format $(S)'
+            // 'MERGE += .vscode bin doc lib src tmp'
+            // ''
+            // '.PHONY: dev shadow release zip')
+        self.mk.merge \
+            // (S('dev:', pfx='')
+                // 'git push -v'
+                // 'git checkout $@'
+                // 'git pull -v'
+                // 'git checkout shadow -- $(MERGE)')
+        self.mk.merge \
+            // (S('shadow:', pfx='')
+                // 'git push -v'
+                // 'git checkout $@'
+                // 'git pull -v')
+        self.mk.merge \
+            // (S('zip:', pfx='\nZIP = tmp/$(MODULE)_$(BRANCH)_$(NOW)_$(REL).src.zip')
+                // 'git archive --format zip --output $(ZIP) HEAD'
+                // '$(MAKE) doxy ; zip -r $(ZIP) docs')
 
 
 class IO(Object):
@@ -354,12 +403,24 @@ class Mod(Meta):
     def src(self, p): pass
 
 class Py(Mod):
+
+    def mk(self, p):
+        p.mk.update // '$(PIP) install --user -U pip autopep8 pytest'
+        p.mk.merge.ins(2, 'MERGE += requirements.txt')
+
     def giti(self, p):
         p.giti // (Sec(sfx='') // '/__pycache__/')
 
     def src(self, p):
+        self.py(p)
+        self.reqs(p)
+
+    def py(self, p):
         p.py = pyFile(f'{p}'); p.d // p.py
         p.py.imports = (Sec(sfx='')); p.py // p.py.imports
+
+    def reqs(self, p):
+        p.reqs = File('requirements', '.txt'); p.d // p.reqs
 
     def settings(self, p):
         mask = '"**/__pycache__/**":true,'
