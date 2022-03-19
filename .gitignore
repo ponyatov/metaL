@@ -1,0 +1,10 @@
+*~
+*.swp
+*.log
+
+/docs/
+/metaL/
+
+/__pycache__/
+
+!.gitignore
