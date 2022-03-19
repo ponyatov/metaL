@@ -1,8 +1,11 @@
 import os, sys
 
+
 class Object:
+
     def __init__(self, V):
         self.value = V
+        self.slot = {}
         self.nest = []
 
     def box(self, that):
@@ -16,21 +19,50 @@ class Object:
     def __format__(self, spec):
         return self.val()
 
-    def tag(self): return self.__class__.__name__.lower()
-    def val(self): return f'{self.value}'
+    def dump(self, cycle=[], depth=0, prefix=''):
+        # head
+        def pad(depth): return '\n' + '\t' * depth
+        ret = pad(depth) + self.head(prefix)
+        # cycle
+        if not depth: cycle = []
+        if self in cycle: return f'{ret} _/'
+        else: cycle.append(self)
+        # slot{}s
+        for i in self.keys():
+            ret += self[i].dump(cycle, depth + 1, prefix=f'{i} = ')
+        # nest[]ed
+        for j, k in enumerate(self):
+            ret += k.dump(cycle, depth + 1, prefix=f'{j}: ')
+        # subtree
+        return ret
+
+    def head(self, prefix=''):
+        gid = f' @{id(self):x}'
+        return f'{prefix}<{self.tag()}:{self.val()}>{gid}'
+
+    def tag(self):
+        return self.__class__.__name__.lower()
+
+    def val(self):
+        return f'{self.value}'
+
+    def keys(self):
+        return sorted(self.slot.keys())
+
+    def __iter__(self):
+        return iter(self.nest)
 
     def __floordiv__(self, that):
         self.nest.append(self.box(that)); return self
 
-    def __iter__(self): return iter(self.nest)
-
     def ins(self, idx, that):
-        assert isinstance(idx, int)
         self.nest.insert(idx, self.box(that))
 
-class Primitive(Object): pass
+class Primitive(Object):
+    pass
 
 class S(Primitive):
+
     def __init__(self, V=None, end=None, pfx=None, sfx=None):
         super().__init__(V)
         self.end = end; self.pfx = pfx; self.sfx = sfx
@@ -51,6 +83,7 @@ class S(Primitive):
         return ret
 
 class Sec(S):
+
     def gen(self, to, depth=0):
         ret = ''
         if self.nest:
@@ -66,32 +99,49 @@ class Sec(S):
                 ret += f'{to.tab*depth}{self.sfx}\n' if self.sfx else '\n'
         return ret
 
-class Container(Object): pass
+class Container(Object):
+    pass
 
-class Active(Object): pass
+class Map(Container):
+    pass
+
+class Vector(Container):
+    pass
+
+class Stack(Container):
+    pass
+
+class Queue(Container):
+    pass
+
+class Active(Object):
+    pass
+
+class VM(Active):
+    pass
+
+class Op(Active):
+    pass
 
 class Fn(Active):
-    def __init__(self, V, args=[]):
+    def __init__(self, V, args=[], pfx=''):
         super().__init__(V)
-        self.args = args
+        self.args = args; self.pfx = pfx
 
     def gen(self, to, depth=0):
-        ret = to.fn(self, depth)
-        for i in self: ret // i.gen(to, depth + 1)
-        return ret.gen(to, depth)
+        return to.fn(self, depth).gen(to, depth)
 
-class Meta(Object): pass
+class Meta(Object):
+    pass
 
 class Class(Meta):
-    def __init__(self, C, sup=[]):
+    def __init__(self, C, sup=[], pfx=''):
         assert callable(C)
         super().__init__(C.__name__)
-        self.sup = sup
+        self.sup = sup; self.pfx = pfx
 
     def gen(self, to, depth=0):
-        ret = to.clazz(self, depth)
-        for i in self: ret // i.gen(to, depth + 1)
-        return ret.gen(to, depth)
+        return to.clazz(self, depth).gen(to, depth)
 
 
 class Project(Meta):
@@ -199,11 +249,41 @@ Language: Cpp'''
                           // editor)
 
     def extensions(self):
-        self.extensions = jsonFile('extensions')
-        self.vscode // self.extensions
+        self.vscode.extensions = jsonFile('extensions')
+        self.vscode // self.vscode.extensions
+        self.extensions = \
+            (S('"recommendations": [', ']')
+             // '"ryuta46.multi-command",'
+             // '"stkb.rewrap",'
+             // '"tabnine.tabnine-vscode",'
+             // '// "auchenberg.vscode-browser-preview",'
+             // '// "ms-vscode-remote.remote-ssh",'
+             // '// "ms-azuretools.vscode-docker",'
+             )
+        self.vscode.extensions // (S('{', '}') // self.extensions)
+        # //
+        # // "ms-vscode.cpptools",
+        # "vsciot-vscode.vscode-arduino",
 
     def tasks(self):
         self.tasks = jsonFile('tasks'); self.vscode // self.tasks
+
+        def task(group, task): return \
+            (S('{', '},')
+             // f'"label":          "{group}: {task}",'
+             // f'"type":           "shell",'
+             // f'"command":        "make {task}",'
+             // f'"problemMatcher": []')
+
+        self.tasks \
+            // (S('{', '}')
+                // '"version": "2.0.0",'
+                // (S('"tasks": [', ']')
+                // task('project', 'install')
+                // task('project', 'update')
+                // task('git', 'dev')
+                // task('git', 'shadow')
+                    ))
 
     def bin(self):
         self.bin = Dir('bin'); self.d // self.bin
@@ -226,7 +306,7 @@ Language: Cpp'''
         self.tmp.giti = giti(); self.tmp // (self.tmp.giti // '*')
 
     def readme(self):
-        self.readme = File('README.md'); self.d // self.readme
+        self.readme = mdFile('README'); self.d // self.readme
         (self.readme
             // '![logo](doc/logo.png)'
             // f'#  {self}'
@@ -283,7 +363,7 @@ Language: Cpp'''
         #
         self.mk.install_ = Sec('install', pfx=''); self.mk // self.mk.install_
         self.mk.install = \
-            (S('install: $(OS)_install', pfx='.PHONY: install update')
+            (S('install: $(OS)_install gz', pfx='.PHONY: install update')
              // '$(MAKE) update')
         self.mk.update = \
             (S('update: $(OS)_update', pfx=''))
@@ -293,6 +373,9 @@ Language: Cpp'''
                 pfx='\n.PHONY: GNU_Linux_install GNU_Linux_update')
                 // 'sudo apt update'
                 // 'sudo apt install -u `cat apt.txt`')
+        #
+        self.mk.gz_ = Sec('gz', pfx=''); self.mk.install_ // self.mk.gz_
+        self.mk.gz = S('gz:', pfx='.PHONY: gz'); self.mk.gz_ // self.mk.gz
         #
         self.mk.merge = Sec('merge', pfx=''); self.mk // self.mk.merge
         (self.mk.merge
@@ -350,6 +433,14 @@ class giti(File):
         super().__init__(V, ext)
         self.bot // '!.gitignore'
 
+class Makefile(File):
+    def __init__(self, V='Makefile', ext='', tab='\t'):
+        super().__init__(V, ext, tab=tab)
+
+class mdFile(File):
+    def __init__(self, V, ext='.md'):
+        super().__init__(V, ext)
+
 class jsonFile(File):
     def __init__(self, V, ext='.json', comment='//'):
         super().__init__(V, ext, comment=comment)
@@ -357,22 +448,21 @@ class jsonFile(File):
 class pyFile(File):
     def __init__(self, V, ext='.py'):
         super().__init__(V, ext)
+        self.imports = (Sec(sfx='')); self.top // self.imports
 
     def clazz(self, clazz, depth):
         sup = list(map(lambda i: i.__name__, clazz.sup))
         sup = '(%s)' % ', '.join(sup) if sup else ''
-        pazz = ' pass' if not clazz.nest else ''
-        ret = S(f'class {clazz}{sup}:{pazz}', pfx='')
+        ret = S(f'class {clazz}{sup}:', pfx=clazz.pfx)
+        for i in clazz: ret // i
         return ret
 
     def fn(self, fn, depth):
         args = ', '.join(fn.args)
-        ret = S(f'def {fn}({args}):')
+        ret = S(f'def {fn}({args}):', pfx=fn.pfx)
+        if not fn.nest: ret // 'pass'
+        for i in fn: ret // i
         return ret
-
-class Makefile(File):
-    def __init__(self, V='Makefile', ext='', tab='\t'):
-        super().__init__(V, ext, tab=tab)
 
 class Mod(Meta):
     def __init__(self, V=None):
@@ -381,6 +471,7 @@ class Mod(Meta):
 
     def pipe(self, p):
         p.mod += [self.__class__]
+        self.dirs(p)
         self.mk(p)
         self.apt(p)
         self.giti(p)
@@ -397,6 +488,7 @@ class Mod(Meta):
     def extensions(self, p): pass
     def tasks(self, p): pass
 
+    def dirs(self, p): pass
     def mk(self, p): pass
     def apt(self, p): pass
     def giti(self, p): pass
@@ -417,7 +509,6 @@ class Py(Mod):
 
     def py(self, p):
         p.py = pyFile(f'{p}'); p.d // p.py
-        p.py.imports = (Sec(sfx='')); p.py // p.py.imports
 
     def reqs(self, p):
         p.reqs = File('requirements', '.txt'); p.d // p.reqs
@@ -425,6 +516,9 @@ class Py(Mod):
     def settings(self, p):
         mask = '"**/__pycache__/**":true,'
         p.settings.exclude // mask; p.settings.watcher // mask
+
+    def extensions(self, p):
+        p.extensions // '"tht13.python",'
 
 class metaL(Mod):
 
@@ -453,36 +547,93 @@ class metaL(Mod):
     def metal(self, p):
         p.metal = pyFile(f'metaL'); p.d // p.metal
         #
-        p.py.imports // 'import os, sys'
-        p.py.object = Class(Object)
-        (p.py.object
+        p.metal.imports // 'import os, sys'
+        p.metal.object = Class(Object)
+        #
+        p.metal.init = (Fn('__init__', ['self', 'V'])
+                        // 'self.value = V'
+                        // 'self.slot = {}'
+                        // 'self.nest = []')
+        #
+        p.metal.box_ = (Fn('box', ['self', 'that'])
+                        // "if isinstance(that, Object): return that"
+                        // "if isinstance(that, str): return S(that)"
+                        // "raise TypeError(['box', type(that), that])"
+                        )
+        #
+        p.metal.dump_ = \
+            (Fn('dump', ['self', 'cycle=[]', 'depth=0', "prefix=''"])
+             // '# head'
+                // "def pad(depth): return '\\n' + '\\t' * depth"
+                // "ret = pad(depth) + self.head(prefix)"
+             // '# cycle'
+                // r"if not depth: cycle = []"
+                // r"if self in cycle: return f'{ret} _/'"
+                // r"else: cycle.append(self)"
+             // '# slot{}s'
+                // (S('for i in self.keys():')
+                    // r"ret += self[i].dump(cycle, depth + 1, prefix=f'{i} = ')")
+             // '# nest[]ed'
+             // (S('for j, k in enumerate(self):')
+                 // r"ret += k.dump(cycle, depth + 1, prefix=f'{j}: ')")
+             // '# subtree'
+                // 'return ret'
+             )
+        p.metal.head_ = \
+            (Fn('head', ['self', "prefix=''"])
+             // r"gid = f' @{id(self):x}'"
+             // r"return f'{prefix}<{self.tag()}:{self.val()}>{gid}'"
+             )
+        #
+        (p.metal.object
             // (Sec()
-                // Fn('__init__', ['self', 'V'])
-                // Fn('box', ['self', 'that'])
+                // p.metal.init
+                // p.metal.box_
                 )
             // (Sec()
-                // Fn('__repr__', ['self'])
-                // Fn('__format__', ['self', 'spec'])
+                // (Fn('__repr__', ['self']) // 'return self.dump()')
+                // (Fn('__format__', ['self', 'spec']) // 'return self.val()')
+                // p.metal.dump_
+                // p.metal.head_
+                // (Fn('tag', ['self'])
+                    // "return self.__class__.__name__.lower()")
+                // (Fn('val', ['self'])
+                    // "return f'{self.value}'")
                 )
-
+            // (Sec()
+                // (Fn('keys', ['self'])
+                    // r"return sorted(self.slot.keys())")
+                // (Fn('__iter__', ['self'])
+                    // r"return iter(self.nest)")
+                // (Fn('__floordiv__', ['self', 'that'])
+                    // r"self.nest.append(self.box(that)); return self")
+                // (Fn('ins', ['self', 'idx', 'that'])
+                    // r"self.nest.insert(idx, self.box(that))")
+                )
          )
-        p.metal // p.py.object
+        p.metal // p.metal.object
         #
         p.metal // Class(Primitive, [Object])
         #
-        p.py.s = (Class(S, [Primitive])
-                  // Fn('__init__', ['self', 'V=None', 'end=None', 'pfx=None', 'sfx=None'])
-                  // Fn('gen', ['self', 'to', 'depth=0']))
-        p.metal // p.py.s
+        p.metal.s = (Class(S, [Primitive])
+                     // Fn('__init__', ['self', 'V=None', 'end=None', 'pfx=None', 'sfx=None'])
+                     // Fn('gen', ['self', 'to', 'depth=0']))
+        p.metal // p.metal.s
         #
-        p.py.sec = (Class(Sec, [S])
-                    // Fn('gen', ['self', 'to', 'depth=0'])
-                    )
-        p.metal // p.py.sec
+        p.metal.sec = (Class(Sec, [S])
+                       // Fn('gen', ['self', 'to', 'depth=0'])
+                       )
+        p.metal // p.metal.sec
         #
         p.metal // Class(Container, [Object])
+        p.metal // Class(Map, [Container])
+        p.metal // Class(Vector, [Container])
+        p.metal // Class(Stack, [Container])
+        p.metal // Class(Queue, [Container])
         #
         p.metal // Class(Active, [Object])
+        p.metal // (Class(VM, [Active]))
+        p.metal // (Class(Op, [Active]))
         p.metal // (Class(Fn, [Active])
                     // Fn('__init__', ['self', 'V', 'args=[]'])
                     // Fn('gen', ['self', 'to', 'depth=0'])
@@ -504,6 +655,7 @@ class metaL(Mod):
                     // Fn('__init', ['self']))
         p.metal // (Class(Makefile, [File])
                     // Fn('__init', ['self', "V='Makefile'", "ext=''", "tab='\\t'"]))
+        p.metal // (Class(mdFile, [File]))
         p.metal // (Class(jsonFile, [File])
                     // Fn('__init', ['self']))
         p.metal // (Class(pyFile, [File])
@@ -512,3 +664,107 @@ class metaL(Mod):
         p.metal // Class(Mod, [Meta])
         p.metal // Class(Py, [Mod])
         p.metal // Class(metaL, [Mod])
+
+class htmlFile(File):
+    def __init__(self, V, ext='.html'):
+        super().__init__(V, ext)
+
+class cssFile(File):
+    def __init__(self, V, ext='.css'):
+        super().__init__(V, ext)
+
+class jsFile(File):
+    def __init__(self, V, ext='.js'):
+        super().__init__(V, ext)
+
+class HTML(S):
+    def __init__(self, V):
+        super().__init__(f'<{V}>', f'</{V}>')
+
+class Flask(Mod):
+    def src(self, p):
+        self.py(p)
+        self.reqs(p)
+
+    def dirs(self, p):
+        self.static(p)
+        self.templates(p)
+
+    def mk(self, p):
+        p.mk.gz_ \
+            // S('CDNJS = https://cdnjs.cloudflare.com/ajax/libs', pfx='')
+        p.mk.version \
+            // 'JQUERY_VER = 3.6.0'
+        p.mk.gz.value += ' static/jquery.js'
+        p.mk.gz_ \
+            // (S('static/jquery.js:', pfx='')
+                // '$(CURL) $@ $(CDNJS)/jquery/$(JQUERY_VER)/jquery.min.js')
+
+    def static(self, p):
+        p.static = Dir('static'); p.d // p.static
+        #
+        self.css(p)
+        self.js(p)
+
+    def js(self, p):
+        p.js = jsFile('js'); p.static // p.js
+
+    def css(self, p):
+        p.css = cssFile('css'); p.static // p.css
+        (p.css
+            // (S('body {', '}')
+                // 'background: #222;'
+                // 'border: 1pt solid yellow;'
+                ))
+
+    def templates(self, p):
+        p.templates = Dir('templates'); p.d // p.templates
+        #
+        self.index(p)
+        self.all(p)
+
+    def index(self, p):
+        p.index = htmlFile('index'); p.templates // p.index
+        p.index // "{% extends 'all.html' %}"
+
+    def block(self, name):
+        return f'{{% block {name} %}}{{% endblock %}}'
+
+    def all(self, p):
+        p.all = htmlFile('all'); p.templates // p.all
+        p.all // '<!DOCTYPE html>'
+        #
+        p.all.head = \
+            (HTML('head')
+             // '<link rel="stylesheet" href="/static/css.css">'
+             // '<script src="/static/jquery.js"></script>'
+             // self.block('head')
+             )
+        #
+        p.all.body = HTML('body') // self.block('body')
+        #
+        p.all.script = \
+            S('<script src="/static/js.js"></script>') \
+            // self.block('script')
+        #
+        p.all // (HTML('html') // p.all.head // p.all.body // p.all.script)
+
+    def reqs(self, p):
+        p.reqs // 'Flask'
+
+    def py(self, p):
+        p.py.imports // 'import flask'
+        #
+        p.py.index = \
+            (Fn('index', pfx="\n@app.route('/')")
+                // "return flask.render_template('index.html')")
+        #
+        p.py.favicon = \
+            (Fn('favicon', pfx="\n@app.route('/favicon.ico')")
+                // "return flask.send_from_directory('doc', 'logo.png')")
+        #
+        p.py // (Sec()
+                 // "app = flask.Flask(__name__)"
+                 // p.py.index
+                 // p.py.favicon
+                 // '' // "app.run(debug=True)")

@@ -1,5 +1,7 @@
+import sys
 from metaL import *
-p = Project()
+try: p = Project(sys.argv[1])
+except IndexError: p = Project()
 p.TITLE = 'metaprogramming layer over Python'
-p | Py() | metaL()
+p | Py() | metaL() | Flask()
 p.sync()

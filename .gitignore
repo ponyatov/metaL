@@ -5,6 +5,8 @@
 /docs/
 /metaL/
 
+/web/
+
 /__pycache__/
 
 !.gitignore
