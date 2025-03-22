@@ -42,10 +42,25 @@ dirs()
 
 
 class Object:
-    def tag(self): return self.__class__.__name__.lower()
-    def val(self): return ''
-    def head(self): return f'<{self.tag()}:{self.val()}>'
-    def __repr__(self): return self.head()
+    def tag(self):
+        return self.__class__.__name__.lower()
+
+    def val(self):
+        return ''
+
+    def head(self, prefix=''):
+        return f'{prefix}<{self.tag()}:{self.val()}>'
+
+    def pad(self, depth):
+        return '\n'+' '*4*depth
+
+    def dump(self, depth=0):
+        ret = self.pad(depth)+self.head()
+        for i in self.nest:
+            ret += self.pad(depth+1) + i.head()
+        return ret
+
+    def __repr__(self): return self.dump()
 
     # nested elements (object subtree)
     nest = []
@@ -54,6 +69,16 @@ class Object:
         assert isinstance(o, Object)
         self.nest.append(o)
         return self
+
+# source code block
+
+
+class S(Object):
+    # @param[in] pfx prefix line
+    # @paramp[in] sfx suffix line
+    def __init__(self, pfx=None, sfx=None):
+        self.pfx = pfx
+        self.sfx = sfx
 
 
 class IO(Object):
@@ -65,7 +90,8 @@ class IO(Object):
     def __truediv__(self, o):
         assert isinstance(o, IO)
         o.path = f'{self.path}/{o.path}'
-        return super().__truediv__(o)
+        self.nest.append(o)
+        return self
 
 
 class Dir(IO):
@@ -83,6 +109,11 @@ class File(IO):
         with open(self.path, 'w') as f:
             pass
 
+    def __truediv__(self, o):
+        assert isinstance(o, S)
+        self.nest.append(o)
+        return self
+
 
 class Cpp(File):
     pass
@@ -99,14 +130,20 @@ class JSON(File):
     pass
 
 
-settings = JSON('settings.json')
+def settings():
+    json = JSON('settings.json')
+    # ret / S('{', '}')
+    return json
+
+
 extensions = JSON('extensions.json')
 tasks = JSON('tasks.json')
 launch = JSON('launch.json')
 c_cpp_properties = JSON('c_cpp_properties.json')
 
-(Dir('.vscode') / settings
- / extensions
- / tasks
- / launch
- / c_cpp_properties).sync()
+print(Dir('.vscode')/settings())
+# (Dir('.vscode') / settings()).sync()
+#  / extensions
+#  / tasks
+#  / launch
+#  / c_cpp_properties).sync()
