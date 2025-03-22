@@ -1,6 +1,5 @@
 import os
 
-
 MODULE = 'metaL'
 TITLE = '[meta]programming Language/Layer'
 SUBTITLE = 'software prototyping system'
@@ -27,7 +26,6 @@ readme()
 
 DIRS = ['.vscode', 'bin', 'doc', 'lib', 'inc', 'src', 'tmp', 'ref']
 
-
 def dirs():
     for d in DIRS:
         try:
@@ -38,9 +36,7 @@ def dirs():
 
 dirs()
 
-# executable object graph item
-
-
+## executable object graph item
 class Object:
     def tag(self):
         return self.__class__.__name__.lower()
@@ -52,12 +48,12 @@ class Object:
         return f'{prefix}<{self.tag()}:{self.val()}>'
 
     def pad(self, depth):
-        return '\n'+' '*4*depth
+        return '\n' + ' ' * 4 * depth
 
-    def dump(self, depth=0):
-        ret = self.pad(depth)+self.head()
+    def dump(self, depth=0, prefix=''):
+        ret = self.pad(depth) + self.head(prefix)
         for i in self.nest:
-            ret += self.pad(depth+1) + i.head()
+            ret += i.dump(depth + 1)
         return ret
 
     def __repr__(self): return self.dump()
@@ -70,12 +66,10 @@ class Object:
         self.nest.append(o)
         return self
 
-# source code block
-
-
+## source code block
 class S(Object):
-    # @param[in] pfx prefix line
-    # @paramp[in] sfx suffix line
+    ## @param[in] pfx prefix line
+    ## @paramp[in] sfx suffix line
     def __init__(self, pfx=None, sfx=None):
         self.pfx = pfx
         self.sfx = sfx
@@ -132,7 +126,7 @@ class JSON(File):
 
 def settings():
     json = JSON('settings.json')
-    # ret / S('{', '}')
+    json / S('{', '}')
     return json
 
 
@@ -141,7 +135,7 @@ tasks = JSON('tasks.json')
 launch = JSON('launch.json')
 c_cpp_properties = JSON('c_cpp_properties.json')
 
-print(Dir('.vscode')/settings())
+print(Dir('.vscode') / settings())
 # (Dir('.vscode') / settings()).sync()
 #  / extensions
 #  / tasks
