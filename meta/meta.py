@@ -8,7 +8,7 @@ YEAR = '2022'
 LICENSE = 'MIT'
 GITHUB = f'https://github.com/ponyatov/{MODULE}'
 
-DIRS = ['.vscode', 'bin', 'doc', 'lib', 'inc', 'src', 'tmp', 'ref']
+DIRS = ['.vscode', 'bin', 'doc', 'lib', 'inc', 'src', 'tmp', 'ref', 'meta']
 
 from readme import *
 
