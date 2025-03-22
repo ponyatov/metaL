@@ -1,3 +1,4 @@
+
 {
     "version": "2.0.0",
     "tasks": [
@@ -8,6 +9,6 @@
             "problemMatcher" : [],
             "presentation"   : {"showReuseMessage": false, "focus": false, "reveal": "silent"},
             "group"          : {"kind": "build","isDefault": true}
-        },
+        }
     ]
 }
