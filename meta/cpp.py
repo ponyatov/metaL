@@ -9,6 +9,6 @@ hpp = Cpp(f'inc/{MODULE}.hpp')
 cpp.sync()
 hpp.sync()
 
-cmake = File('CMakeLists.txt');cmake.sync()
 
 from presets import *
+from cmake import *

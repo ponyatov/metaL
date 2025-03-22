@@ -39,8 +39,9 @@ pc = (H('pc', inherits='common')
       / '"cacheVariables"  : {"HW":"pc", "CPU":"i5", "ARCH":"x86_64"}')
 
 linux = (C('linux', inherits='pc')
-         / r'"toolchainFile"   : "x86_64-linux-gnu.cmake"'
+         / r'"toolchainFile"   : "x86_64-linux-gnu.cmake",'
          / r'"cacheVariables"  : {"OS":"linux"}')
+linux.sfx = '}'
 
 configure = S(None, '"configurePresets": [', ']') / common / pc / linux
 
