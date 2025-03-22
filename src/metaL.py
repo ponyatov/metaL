@@ -1,4 +1,5 @@
 import os
+import sys
 
 MODULE = 'metaL'
 TITLE = '[meta]programming Language/Layer'
@@ -38,11 +39,15 @@ dirs()
 
 ## executable object graph item
 class Object:
+
+    def __init__(self, value):
+        self.value = value
+
     def tag(self):
         return self.__class__.__name__.lower()
 
     def val(self):
-        return ''
+        return f'{self.value}'
 
     def head(self, prefix=''):
         return f'{prefix}<{self.tag()}:{self.val()}>'
@@ -51,6 +56,9 @@ class Object:
         return '\n' + ' ' * 4 * depth
 
     def dump(self, depth=0, prefix=''):
+        ret = ''
+        return ret
+    
         ret = self.pad(depth) + self.head(prefix)
         for i in self.nest:
             ret += i.dump(depth + 1)
@@ -66,13 +74,18 @@ class Object:
         self.nest.append(o)
         return self
 
+hello = Object('hello'); print(hello)
+world = Object('world'); print(world)
+hello / world; print(hello)\
+
+sys.exit(0)
+
 ## source code block
 class S(Object):
     ## @param[in] pfx prefix line
     ## @paramp[in] sfx suffix line
     def __init__(self, pfx=None, sfx=None):
-        self.pfx = pfx
-        self.sfx = sfx
+        self.pfx = pfx; self.sfx = sfx
 
 
 class IO(Object):
@@ -84,8 +97,7 @@ class IO(Object):
     def __truediv__(self, o):
         assert isinstance(o, IO)
         o.path = f'{self.path}/{o.path}'
-        self.nest.append(o)
-        return self
+        self.nest.append(o); return self
 
 
 class Dir(IO):
@@ -97,6 +109,9 @@ class Dir(IO):
         for i in self.nest:
             i.sync()
 
+    def __truediv__(self, o):
+        assert isinstance(o, File)
+        return IO.__truediv__(self, o)
 
 class File(IO):
     def sync(self):

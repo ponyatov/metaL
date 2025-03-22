@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label"          : "python: run",
+            "type"           : "shell",
+            "command"        : "python3 src/${workspaceFolderBasename}.py lib/${workspaceFolderBasename}.ini",
+            "problemMatcher" : [],
+            "presentation"   : {"showReuseMessage": false, "focus": false, "reveal": "silent"},
+            "group"          : {"kind": "build","isDefault": true}
+        },
+    ]
+}
