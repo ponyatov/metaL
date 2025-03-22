@@ -10,3 +10,5 @@ cpp.sync()
 hpp.sync()
 
 cmake = File('CMakeLists.txt');cmake.sync()
+
+from presets import *
