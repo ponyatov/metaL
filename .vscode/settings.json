@@ -1,5 +1,9 @@
-
 {
+    // files
+    "files.exclude": {
+        "**/__pycache__": true,
+    },
+    
     // editor
     "files.eol": "\n",
     "files.insertFinalNewline": true,
