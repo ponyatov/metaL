@@ -174,7 +174,7 @@ def settings():
             / r'"editor.fontSize": 14,'
             / r'"explorer.autoReveal": false,'
             / r'"git.enabled": false,'
-            / r'"terminal.integrated.copyOnSelection": true,'/'')
+            / r'"terminal.integrated.copyOnSelection": true,' / '')
     (json[0]
      / r'// Python'
      / r'"python.defaultInterpreterPath":  "python3",'
@@ -192,7 +192,7 @@ def settings():
 extensions = JSON('extensions.json')
 
 def tasks():
-    json= JSON('tasks.json') 
+    json = JSON('tasks.json')
     # json / S(None,'{','}')
     return json
 
