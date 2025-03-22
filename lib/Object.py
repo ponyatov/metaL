@@ -1,9 +1,10 @@
+## executable object graph item
 class Object:
 
     def __init__(self, value):
-        # scalar value
+        ## scalar value
         self.value = value
-        # nested elements (object subtree)
+        ## nested elements (object subtree)
         self.nest = []
 
     def __getitem__(self, idx):

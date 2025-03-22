@@ -9,3 +9,16 @@ LICENSE = 'MIT'
 GITHUB = f'https://github.com/ponyatov/{MODULE}'
 
 DIRS = ['.vscode', 'bin', 'doc', 'lib', 'inc', 'src', 'tmp', 'ref']
+
+from readme import *
+
+import os
+
+def dirs():
+    for d in DIRS:
+        try:
+            os.mkdir(d)
+        except FileExistsError:
+            pass
+
+dirs()
