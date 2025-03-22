@@ -24,3 +24,6 @@ class File(IO):
         with open(self.path, 'w') as f:
             for i in self.nest:
                 f.write(i.gen())
+
+class JSON(File):
+    pass
