@@ -13,7 +13,7 @@ class Dir(IO):
         for i in self.nest: i.sync()
 
     def __truediv__(self, o):
-        assert isinstance(o, File)
+        assert isinstance(o, IO)
         o.path = f'{self.path}/{o.path}'
         self.nest.append(o)
         return self
