@@ -8,3 +8,5 @@ hpp = Cpp(f'inc/{MODULE}.hpp')
 
 cpp.sync()
 hpp.sync()
+
+cmake = File('CMakeLists.txt');cmake.sync()

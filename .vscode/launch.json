@@ -2,14 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name"         : "lm3s6",
-            "type"         : "cortex-debug",
-            "request"      : "launch",
-            "program"      : "${command:cmake.launchTargetPath}",
-            "preLaunchTask": "CMake: build",
-            "cwd"          : "${workspaceFolder}",
-        }
-        {
             "name"         : "linux",
             "type"         : "cppdbg",
             "request"      : "launch",

@@ -27,7 +27,6 @@ def launch():
     json = JSON('launch.json') / S(None, '{', '}')
     (json[0] / r'"version": "0.2.0",' /
      (S(None, r'"configurations": [', ']')
-      / cortex('lm3s6').gen()
       / cppdbg('linux').gen()
       ))
     return json
