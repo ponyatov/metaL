@@ -1,4 +1,4 @@
-from IO import JSON
+from IO import *
 from S import *
 
 def tasks():
@@ -14,3 +14,5 @@ def tasks():
                   / r'"presentation"   : {"showReuseMessage": false, "focus": false, "reveal": "silent"},'
                   / r'"group"          : {"kind": "build","isDefault": true}')))
     return json
+
+(Dir('.vscode') / tasks()).sync()

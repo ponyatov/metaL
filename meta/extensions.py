@@ -1,4 +1,4 @@
-from IO import JSON
+from IO import *
 from S import *
 
 def extensions():
@@ -49,3 +49,5 @@ def extensions():
 
                ))
     return json
+
+(Dir('.vscode') / extensions()).sync()

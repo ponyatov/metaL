@@ -1,4 +1,4 @@
-from IO import JSON
+from IO import *
 from S import *
 
 def settings():
@@ -29,10 +29,12 @@ def settings():
      / r'"python.defaultInterpreterPath":  "python3",'
      / r'"autopep8.path"                : ["autopep8"],'
      / r'"autopep8.args"                : ["--ignore","E26,E302,E305,E401,E402,E701,E702"],'
-     / r'"python.analysis.extraPaths"   : ["${workspaceFolder}/lib"],'
+     / r'"python.analysis.extraPaths"   : ["${workspaceFolder}/meta"],'
      / r'"[python]": {'
      / r'    "editor.defaultFormatter"  : "ms-python.autopep8",'
      / r'    "editor.formatOnSave"      :  false'
      / r'},')
 
     return json
+
+(Dir('.vscode') / settings()).sync()
