@@ -4,7 +4,7 @@ preset = JSON('CMakePresets.json')
 
 class B(S):
     def __init__(self, name):
-        super().__init__(None, '{', '}')
+        super().__init__('{', '}')
         (self
             / f'"name"            :  "{name}",'
             / f'"configurePreset" :  "{name}",'
@@ -13,7 +13,7 @@ class B(S):
 
 class C(S):
     def __init__(self, name, inherits=None):
-        super().__init__(None, '{', '},')
+        super().__init__('{', '},')
         self / f'"name"            : "{name}",'
         if inherits: self / f'"inherits"        : "{inherits}",'
 
@@ -22,12 +22,12 @@ class H(C):
         super().__init__(name, inherits)
         self / '"hidden"          :  true,'
 
-build = S(None, '"buildPresets": [', '],') / B('linux')
+build = S('"buildPresets": [', '],') / B('linux')
 
 common = (H('common')
           / '"binaryDir"       : "${sourceDir}/tmp/${presetName}",'
             / '"generator"       : "Unix Makefiles",'
-            / (S(None, '"cacheVariables"  : {', '}')
+            / (S('"cacheVariables"  : {', '}')
                 / '"CMAKE_INSTALL_PREFIX"    : "${sourceDir}/bin",'
                 / '"CMAKE_MODULE_PATH"       : "${sourceDir}/cmake",'
                 / '"CMAKE_COLOR_DIAGNOSTICS" :  true,'
@@ -41,10 +41,10 @@ pc = (H('pc', inherits='common')
 linux = (C('linux', inherits='pc')
          / r'"toolchainFile"   : "${sourceDir}/cmake/x86_64-linux-gnu.cmake",'
          / r'"cacheVariables"  : {"OS":"linux"}')
-linux.sfx = '}'
+linux.end = '}'
 
-configure = S(None, '"configurePresets": [', ']') / common / pc / linux
+configure = S('"configurePresets": [', ']') / common / pc / linux
 
-preset / (S(None, '{', '}') / '"version": 6,' / build / configure)
+preset / (S('{', '}') / '"version": 6,' / build / configure)
 
 preset.sync()

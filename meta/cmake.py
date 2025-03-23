@@ -37,14 +37,14 @@ any = File('any_toolchain.cmake'); cmake / any
  / r'string(TOUPPER ${ARCH} ARCH_)'
  / r'string(TOUPPER ${OS}   OS_  )'
  / ''
- / (S(None, 'add_compile_options(', ')')
+ / (S('add_compile_options(', ')')
     / r'-Wall -Wextra -Wpedantic'
     / r'$<$<CONFIG:Debug>:-DDEBUG>')
  / ''
- / (S(None, 'add_compile_definitions(', ')')
+ / (S('add_compile_definitions(', ')')
     / r'${HW_} ${CPU_} ${ARCH_} ${OS_}')
     / ''
-    / (S(None, 'add_link_options(', ')')
+    / (S('add_link_options(', ')')
        / r'-Wl,--print-memory-usage')
  / ''
  / r'if(CMAKE_BUILD_TYPE MATCHES Debug)'
@@ -62,7 +62,7 @@ any = File('any_toolchain.cmake'); cmake / any
 
 class P(S):
     def __init__(self, var, cmd):
-        super().__init__(None, 'execute_process(', ')')
+        super().__init__('execute_process(', ')')
         self.var = var
         (self
          / f'OUTPUT_VARIABLE {var}'
@@ -81,7 +81,7 @@ src = File('src.cmake'); cmake / src
 
 class GLOB(S):
     def __init__(self, name):
-        super().__init__(None, f'file(GLOB {name}', ')')
+        super().__init__(f'file(GLOB {name}', ')')
         self / r'RELATIVE ${CMAKE_SOURCE_DIR}'
 
 (src
@@ -113,7 +113,7 @@ lists = File('CMakeLists.txt')
  / r'message("-- |    binary: " ${CMAKE_INSTALL_PREFIX}/${BIN_OUTPUT_NAME}${CMAKE_EXECUTABLE_SUFFIX})'
  / r'message("-- |")'
  / ''
- / (S(None, r'add_executable(${CMAKE_PROJECT_NAME}', ')')
+ / (S(r'add_executable(${CMAKE_PROJECT_NAME}', ')')
      / r'${C}  ${H}  # C/C++ source'
      / r'${S}  ${LD} # embedded/lowlevel'
      / r'${CP} ${HP} # parsers')

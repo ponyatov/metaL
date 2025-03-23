@@ -3,10 +3,10 @@ from S import *
 
 def settings():
     json = JSON('settings.json')
-    json / S(None, '{', '}')
+    json / S('{', '}')
     (json[0]
      / r'// files'
-     / (S(None, '"files.exclude": {', '},')
+     / (S('"files.exclude": {', '},')
         / r'"**/__pycache__": true,') / ''
      )
     (json[0]
@@ -75,7 +75,19 @@ def settings():
      / r'"[python]": {'
      / r'    "editor.defaultFormatter"  : "ms-python.autopep8",'
      / r'    "editor.formatOnSave"      :  false'
-     / r'},')
+     / r'},' / '')
+
+    (json[0]
+     / r'// MinGW/MSYS2'
+     / r'"terminal.integrated.defaultProfile.windows": "UCRT64",'
+     / r'"terminal.integrated.profiles.windows": {'
+     / r'  "UCRT64": {'
+     / r'    "path": "C:\\msys64\\usr\\bin\\bash.exe",'
+     / r'    "args": ["--login","-i"],'
+     / r'    "env": {'
+     / r'      "MSYSTEM": "UCRT64",'
+     / r'      "CHERE_INVOKING": "1",'
+     / r'    }}},')
 
     return json
 
