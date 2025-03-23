@@ -30,7 +30,7 @@
         {
             "name"            : "linux",
             "inherits"        : "pc",
-            "toolchainFile"   : "x86_64-linux-gnu.cmake",
+            "toolchainFile"   : "${sourceDir}/cmake/x86_64-linux-gnu.cmake",
             "cacheVariables"  : {"OS":"linux"}
         }
     ]
