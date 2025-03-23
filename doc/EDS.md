@@ -1,3 +1,3 @@
-# EDS {#EDS}
-## Executable Data Structure
+## Executable Data Structure {#EDS}
+# EDS
 ### Object Graph
