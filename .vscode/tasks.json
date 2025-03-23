@@ -2,6 +2,12 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label"          : "doc: doxygen",
+            "type"           : "shell",
+            "command"        : "rm -rf doc/html ; doxygen .doxygen",
+            "problemMatcher" : [],
+        }
+        {
             "label"          : "python: run",
             "type"           : "shell",
             "command"        : "python3 ${file}",

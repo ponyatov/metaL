@@ -12,6 +12,8 @@ from IO import *
 for d in DIRS:
     if d in ['bin', 'tmp', 'ref']:
         giti = (File('.gitignore') / '*' / '!.gitignore')
+    elif d == 'doc':
+        giti = (File('.gitignore') / 'html' / '!.gitignore')
     else:
         giti = (File('.gitignore') / '!.gitignore')
     (Dir(d) / giti).sync()
