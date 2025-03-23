@@ -1,4 +1,3 @@
-import re
 from Object import Object
 
 ## source code block
@@ -13,14 +12,13 @@ class S(Object):
     ## generate code
     def gen(self, depth=0):
         ret = ''
-        def pad(depth): return ' '*4*depth
+        def pad(depth): return ' ' * 4 * depth
         if self.pfx is not None:
             ret += f'{pad(depth)}{self.pfx}\n'
         if self.value is not None:
-            ret += f'{pad(depth)}{self.val()}\n'
+            ret += f'{pad(depth)}{self.val()}\n' if self.value else '\n'
         for i in self.nest:
             ret += i.gen(depth + 1)
         if self.sfx is not None:
             ret += f'{pad(depth)}{self.sfx}\n'
-        # ret = re.sub(r'^\n{',r'{',ret)
         return ret
