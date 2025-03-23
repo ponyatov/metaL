@@ -30,7 +30,7 @@ common = (H('common')
             / (S('"cacheVariables"  : {', '}')
                 / '"CMAKE_INSTALL_PREFIX"    : "${sourceDir}/bin",'
                 / '"CMAKE_MODULE_PATH"       : "${sourceDir}/cmake",'
-                / '"CMAKE_COLOR_DIAGNOSTICS" :  true,'
+                / '"CMAKE_COLOR_DIAGNOSTICS" :  false,'
                 / '"CMAKE_BUILD_TYPE"        : "Debug",'
                 / '"CMAKE_VERBOSE_MAKEFILE"  :  false'
                ))
