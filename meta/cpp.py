@@ -51,6 +51,12 @@ oct = Class('Oct', [intt], 'octal'); primg / oct
 bin = Class('Bin', [intt], 'binary'); primg / bin
 num = Class('Num', [prim], 'floating point') / 'float value;'; primg / num
 
+(cpp
+    / obj.cpp()
+ / prim.cpp()
+ / intt.cpp() / hex.cpp() / oct.cpp() / bin.cpp()
+ / num.cpp())
+
 cpp.sync()
 hpp.sync()
 

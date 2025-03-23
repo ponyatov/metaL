@@ -34,6 +34,9 @@ class Object {  //
     static Object *pool;  ///< flobal object pool
     Object *prev;         ///< global @ref Object's linked list
     /// @}
+    public:
+        Object();
+    virtual ~Object();
 };
 
 /// @defgroup prim prim
@@ -42,28 +45,40 @@ class Object {  //
 
 /// @brief primitive/machine elements
 class Primitive : public Object {  //
+    public:
+        Primitive();
 };
 
 /// @brief integer
 class Int : public Primitive {  //
     int value;
+    public:
+        Int();
 };
 
 /// @brief hexadecimal
 class Hex : public Int {  //
+    public:
+        Hex();
 };
 
 /// @brief octal
 class Oct : public Int {  //
+    public:
+        Oct();
 };
 
 /// @brief binary
 class Bin : public Int {  //
+    public:
+        Bin();
 };
 
 /// @brief floating point
 class Num : public Primitive {  //
     float value;
+    public:
+        Num();
 };
 /// @}
 /// @}
