@@ -20,6 +20,7 @@ file(GLOB H
 
 file(GLOB INC
     RELATIVE ${CMAKE_SOURCE_DIR}
+    inc
 )
 include_directories(${INC})
 

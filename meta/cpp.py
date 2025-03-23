@@ -3,8 +3,9 @@ from IO import *
 
 class Cpp(File): pass
 
-cpp = Cpp(f'src/{MODULE}.cpp')
-hpp = Cpp(f'inc/{MODULE}.hpp')
+cpp = Cpp(f'src/{MODULE}.cpp') / \
+    f'#include "{MODULE}.hpp"' / '' / 'int main(){}'
+hpp = Cpp(f'inc/{MODULE}.hpp') / '#pragma once'
 
 cpp.sync()
 hpp.sync()

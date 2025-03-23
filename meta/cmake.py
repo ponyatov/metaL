@@ -89,7 +89,7 @@ class GLOB(S):
  / (GLOB('S') / r'hw/${HW}/*.s') / ''
  / (GLOB('C') / r'src/*.c*') / ''
  / (GLOB('H') / r'inc/*.h*') / ''
- / (GLOB('INC'))
+ / (GLOB('INC') / r'inc')
  / r'include_directories(${INC})' / ''
  / (GLOB('L') / r'src/*.lex') / ''
  / (GLOB('Y') / r'src/*.yacc') / ''
@@ -112,7 +112,17 @@ lists = File('CMakeLists.txt')
  / r'message("-- |   startup: " "${S}")'
  / r'message("-- |    binary: " ${CMAKE_INSTALL_PREFIX}/${BIN_OUTPUT_NAME}${CMAKE_EXECUTABLE_SUFFIX})'
  / r'message("-- |")'
-
+ / ''
+ / (S(None, r'add_executable(${CMAKE_PROJECT_NAME}', ')')
+     / r'${C}  ${H}  # C/C++ source'
+     / r'${S}  ${LD} # embedded/lowlevel'
+     / r'${CP} ${HP} # parsers')
+ / '' / r'# target_link_libraries(${CMAKE_PROJECT_NAME} -static)' / ''
+ / r'# target install'
+ / r'set_target_properties(${CMAKE_PROJECT_NAME}'
+ / r'    PROPERTIES OUTPUT_NAME ${BIN_OUTPUT_NAME}${CMAKE_EXECUTABLE_SUFFIX})'
+ / r'install(TARGETS ${CMAKE_PROJECT_NAME}'
+ / r'    DESTINATION ${CMAKE_INSTALL_PREFIX})'
  )
 
 cmake.sync()
