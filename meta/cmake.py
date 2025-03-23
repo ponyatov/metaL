@@ -60,8 +60,43 @@ any = File('any_toolchain.cmake'); cmake / any
 
  )
 
-lists = File('CMakeLists.txt')
+class P(S):
+    def __init__(self, var, cmd):
+        super().__init__(None, 'execute_process(', ')')
+        self.var = var
+        (self
+         / f'OUTPUT_VARIABLE {var}'
+         / f'COMMAND {cmd}'
+         / r'WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}'
+         / r'OUTPUT_STRIP_TRAILING_WHITESPACE')
 
+version = File('version.cmake'); cmake / version
+(version
+ / P('REL', 'git rev-parse --short=4 HEAD') / ''
+ / P('BRANCH', 'git rev-parse --abbrev-ref HEAD') / ''
+ / P('NOW', 'date +%y%m%d # _%H%M') / ''
+ / r'set(BIN_OUTPUT_NAME "${CMAKE_PROJECT_NAME}_${HW}_${BRANCH}_${NOW}")')
+
+src = File('src.cmake'); cmake / src
+
+class GLOB(S):
+    def __init__(self, name):
+        super().__init__(None, f'file(GLOB {name}', ')')
+        self / r'RELATIVE ${CMAKE_SOURCE_DIR}'
+
+(src
+ / (GLOB('LD') / r'hw/${HW}/*.ld') / ''
+ / (GLOB('S') / r'hw/${HW}/*.s') / ''
+ / (GLOB('C') / r'src/*.c*') / ''
+ / (GLOB('H') / r'inc/*.h*') / ''
+ / (GLOB('INC'))
+ / r'include_directories(${INC})' / ''
+ / (GLOB('L') / r'src/*.lex') / ''
+ / (GLOB('Y') / r'src/*.yacc') / ''
+ / (GLOB('R') / r'src/*.ragel')
+ )
+
+lists = File('CMakeLists.txt')
 (lists
  / r'cmake_minimum_required(VERSION 3.22)'
  / r'get_filename_component(CMAKE_PROJECT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)'
